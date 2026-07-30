@@ -1,12 +1,13 @@
 ---
 name: wechat-styler
-slug: wechat-styler
-displayName: WeChat Styler
-version: 1.9.0
 description: 将 Markdown 文章转换为微信公众号可用的内联样式 HTML，支持多主题切换、结构化组件和 SVG 开场动画。用于公众号排版、文章 HTML 生成、替代不稳定外部排版服务。默认纯净排版,加 --components 启用 Agent 智能改写(组件+开场动画)。
-summary: Markdown → 公众号 HTML，多主题 + 组件 + SVG 开场动画。
-tags: [wechat, markdown, html, publishing, design]
 license: MIT
+metadata:
+  slug: wechat-styler
+  displayName: WeChat Styler
+  version: 1.9.0
+  summary: Markdown → 公众号 HTML，多主题 + 组件 + SVG 开场动画。
+  tags: [wechat, markdown, html, publishing, design]
 ---
 
 # WeChat Styler - 公众号排版工具

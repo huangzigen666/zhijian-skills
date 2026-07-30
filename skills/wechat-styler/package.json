@@ -4,6 +4,7 @@
   "description": "Convert Markdown to beautifully styled WeChat HTML",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/hide-dependency-skills.mjs",
     "convert": "node scripts/convert.mjs",
     "qa:density": "node scripts/content-density-audit.mjs",
     "qa:mobile": "node scripts/mobile-visual-qa.mjs",
