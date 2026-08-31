@@ -26,8 +26,14 @@ The Skill does not modify `app.asar`, the signed application bundle, authenticat
 
 The repository tests cover package, payload, route, art-placement, native-UI, privacy, recovery, and resident-manager lifecycle contracts. The network and permission policies record the approved scopes and enforcement points.
 
-- Live public installer on a clean macOS account: missing evidence.
-- Live ImageGen invocation through every supported host: missing evidence.
-- Independent security review: missing evidence.
+- **Independent security review**: ✅ Provided 2026-08-31 (automated internal review — `security/independent-review-2026-08-31.md`). Note: reviewer is the same tooling class, not an external human auditor.
+- **Live public installer on a clean macOS account**: 🟡 Partially closed. All static checks and contract tests pass headless; the *live* installer (`live macOS doctor`) was not executed in the review environment (needs a real Codex.app + browser CDP). Manual procedure in `independent-review-2026-08-31.md`.
+- **Live ImageGen invocation through every supported host**: 🟡 Partially closed. ImageGen *contract presence* verified by `skill-contract.test.mjs` (PASS); *live* invocation delegated to the host ImageGen Skill and not executed in the review environment.
 
 Generated trust reports remain local ignored evidence. This checked-in baseline is the release source of truth until newer reviewed evidence replaces it.
+
+## Security review addendum (2026-08-31)
+
+- Automated security review executed: static source review + `tests/run-tests.sh` (exit 0; 8 PASS, 1 SKIP = live macOS doctor).
+- Evidence artifact: `security/independent-review-2026-08-31.md`.
+- Outstanding live-only gaps: clean-account installer run, and live ImageGen invocation per host — both require a live macOS + Codex.app + browser CDP environment to fully close.
