@@ -1,0 +1,14 @@
+# Python dependency pins for zhijian-skills (Python surface)
+#
+# Pinned 2026-08-31 against PyPI latest; both require Python >=3.10
+# (repo runs on python3.12). wcx is pinned to a git commit via PEP 508
+# URL spec, matching skills/wxmp-article-harvester/scripts/runtime_paths.py.
+#
+# Regenerate the SBOM after editing: python3.12 scripts/gen-python-sbom.py
+
+# --- wxmp-article-harvester ---
+playwright==1.62.0
+wcx @ git+https://github.com/lovstudio/wcx.git@37cf4d5fd6a0677c2137601292f6942ff731d4b9
+
+# --- leadbook ---
+weasyprint==69.0

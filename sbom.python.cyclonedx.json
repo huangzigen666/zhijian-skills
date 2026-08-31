@@ -3,7 +3,7 @@
   "specVersion": "1.5",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-08-31T15:59:03.480998+00:00",
+    "timestamp": "2026-08-31T16:02:38.865246+00:00",
     "component": {
       "type": "application",
       "name": "zhijian-skills",
@@ -17,7 +17,7 @@
       },
       {
         "name": "sbom:method",
-        "value": "AST import scan (no lockfile available)"
+        "value": "AST import scan + requirements.txt pins"
       }
     ]
   },
@@ -25,7 +25,7 @@
     {
       "type": "library",
       "name": "playwright",
-      "version": "unpinned",
+      "version": "1.62.0",
       "purl": "pkg:pypi/playwright",
       "scope": "required",
       "properties": [
@@ -35,7 +35,7 @@
         },
         {
           "name": "sbom:pin-status",
-          "value": "no version pin found in repo; add to requirements and pin a version"
+          "value": "pinned in requirements.txt: 1.62.0"
         }
       ]
     },
@@ -52,14 +52,14 @@
         },
         {
           "name": "sbom:pin-status",
-          "value": "git commit 37cf4d5fd6a0677c2137601292f6942ff731d4b9 (github.com/lovstudio/wcx)"
+          "value": "pinned in requirements.txt: 37cf4d5fd6a0677c2137601292f6942ff731d4b9"
         }
       ]
     },
     {
       "type": "library",
       "name": "weasyprint",
-      "version": "unpinned",
+      "version": "69.0",
       "purl": "pkg:pypi/weasyprint",
       "scope": "required",
       "properties": [
@@ -69,7 +69,7 @@
         },
         {
           "name": "sbom:pin-status",
-          "value": "no version pin found in repo; add to requirements and pin a version"
+          "value": "pinned in requirements.txt: 69.0"
         }
       ]
     }

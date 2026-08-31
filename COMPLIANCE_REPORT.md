@@ -52,7 +52,7 @@
 |---|---|---|
 | theme-studio 两项 live-only 缺口（干净账号安装器实测、各 host ImageGen 实调用） | 环境限制，本会话无法执行 | 已文档化手动验证步骤；标记为"待 live 确认" |
 | `wcx` 无上游签名 | 上游现状，超出仓库能力 | 文档化 + `verify-upstream` 可复核 + 升级需审慎 review |
-| Python 侧 SBOM 已生成但部分依赖未固定 | 范围限定 | `sbom.python.cyclonedx.json` 已产出（CycloneDX 1.5，AST 扫描）；`wcx` 已锁 commit，`playwright` / `weasyprint` 尚缺 `requirements.txt` 版本固定 |
+| Python 侧 SBOM 已生成且依赖已固定 | 范围限定 | `sbom.python.cyclonedx.json` 已产出（CycloneDX 1.5，AST 扫描 + `requirements.txt`）；`wcx` 锁 commit、`playwright==1.62.0`、`weasyprint==69.0` 均已固定 |
 | 功能性外联（metaso.cn / mp.weixin.qq.com / chatgpt.com） | skill 固有需求 | 已在 `SECURITY.md` 逐条披露，凭证均取自环境变量或浏览器会话 |
 | R1 guard push 白名单 | 用户授权的安全控制修改 | 已收窄为仅 `git push`、仅本仓库，其余破坏性 Git 仍拒绝 |
 
@@ -67,4 +67,4 @@
 - 透明度：所有残留项均**显式披露**，未做掩盖；其中 live-only 缺口属环境限制，上游无签名属上游现状。
 - 过程合规：推送经用户逐次显式授权，R1 guard 白名单为用户可控的安全控制修改，未绕过任何守卫。
 
-**建议后续（非阻塞）**：① 在干净 macOS 账号实跑 theme-studio live doctor 以闭合最后两项 live 缺口；② 为 Python 侧 `playwright` / `weasyprint` 补充 `requirements.txt` 并固定版本（SBOM 已生成）；③ 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移。
+**建议后续（非阻塞）**：① 在干净 macOS 账号实跑 theme-studio live doctor 以闭合最后两项 live 缺口；② 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。

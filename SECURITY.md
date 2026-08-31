@@ -72,8 +72,9 @@
 - **Node 依赖（已锁定 + SBOM）**：`codex-theme-studio`、`wechat-article-search`、`wechat-styler` 均含 `package.json` + `package-lock.json`（lockfileVersion 3，已解析完整依赖树）。`wechat-article-search` 的安装指引已从全局 `npm install -g cheerio` 改为遵循锁文件的本地 `npm ci` / `npm install`。每个 Node skill 目录下已生成 `sbom.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-node-sbom.mjs` 依据锁文件生成；重新生成：`node scripts/gen-node-sbom.mjs`。
 - **Python 依赖（已生成 SBOM）**：仓库无 Python 锁文件，采用 AST import 扫描生成 `sbom.python.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-python-sbom.py` 产出；重新生成：`python3.12 scripts/gen-python-sbom.py`。
   - `wcx`（被 `wxmp-article-harvester` 使用）：已锁 commit `37cf4d5fd6a0677c2137601292f6942ff731d4b9` ✅ 已固定。
-  - `playwright`（被 `wxmp-article-harvester` 使用）：**未固定版本**，扫描未发现版本约束，需补充 `requirements.txt` 并锁定版本。
-  - `weasyprint`（被 `leadbook` 使用）：**未固定版本**，同上，需补充 `requirements.txt` 并锁定版本。
+  - `playwright`（被 `wxmp-article-harvester` 使用）：已固定 `==1.62.0`（`requirements.txt`）。
+  - `weasyprint`（被 `leadbook` 使用）：已固定 `==69.0`（`requirements.txt`）。
+  - 全部 Python 依赖现由仓库根 `requirements.txt` 统一固定；重新生成 SBOM：`python3.12 scripts/gen-python-sbom.py`。
 
 ---
 
@@ -91,7 +92,7 @@
 
 1. **[中]** 本文件即为仓库级外联/凭证/持久化统一清单——持续维护。
 2. **[中]** `codex-theme-studio` 补 "现场安装器验证" 与 "独立安全评审" 证据，闭合 trust-baseline 缺口。
-3. **[低]** 为 Node 类 skill 补充依赖锁定与 SBOM（已完成：3 个 Node skill 含 `package-lock.json` + `sbom.cyclonedx.json`）；Python 侧 SBOM 已生成（`sbom.python.cyclonedx.json`），待补 `playwright` / `weasyprint` 版本固定。
+3. **[低]** 为 Node 类 skill 补充依赖锁定与 SBOM（已完成：3 个 Node skill 含 `package-lock.json` + `sbom.cyclonedx.json`）；Python 侧 SBOM 已生成（`sbom.python.cyclonedx.json`），且 `playwright` / `wcx` / `weasyprint` 均已在 `requirements.txt` 固定版本。
 4. **[低]** 确认 `CLIProxyAPI` / `wcx` 上游的发布校验（checksum/签名）。
 
 ---

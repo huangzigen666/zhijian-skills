@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -35,10 +36,35 @@ ALIAS = {
 }
 
 # Known pin status. wcx is pinned to a git commit (see upstream-trust docs);
-# the others are currently unpinned in the repo.
+# the others are currently unpinned unless listed in requirements.txt.
 WCX_COMMIT = "37cf4d5fd6a0677c2137601292f6942ff731d4b9"
 PINNED = {"wcx": f"git commit {WCX_COMMIT} (github.com/lovstudio/wcx)"}
 UNPINNED_NOTE = "no version pin found in repo; add to requirements and pin a version"
+
+
+def load_requirements_pins() -> dict[str, str]:
+    """Parse repo requirements.txt into {dist: version-or-pin-string}.
+
+    Supports both `name==version` and PEP 508 `name @ git+https://...@<commit>`.
+    """
+    pins: dict[str, str] = {}
+    req = ROOT / "requirements.txt"
+    if not req.exists():
+        return pins
+    for line in req.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = re.match(r"^([A-Za-z0-9_.\-]+)\s*@\s*(.+)$", line)  # PEP 508
+        if m:
+            name, spec = m.group(1).lower(), m.group(2).strip()
+            cm = re.search(r"@([0-9a-f]{7,40})$", spec)  # git @<commit>
+            pins[name] = cm.group(1) if cm else spec
+            continue
+        m = re.match(r"^([A-Za-z0-9_.\-]+)\s*==\s*([^\s;]+)", line)
+        if m:
+            pins[m.group(1).lower()] = m.group(2)
+    return pins
 
 
 def collect_local_modules() -> set[str]:
@@ -77,10 +103,14 @@ def scan_imports(local: set[str]) -> dict[str, set[str]]:
     return third
 
 
-def build_bom(third: dict[str, set[str]]) -> dict:
+def build_bom(third: dict[str, set[str]], pins: dict[str, str]) -> dict:
     components = []
     for dist in sorted(third):
-        if dist in PINNED:
+        dkey = dist.lower()
+        if dkey in pins:
+            version = pins[dkey]
+            pin = f"pinned in requirements.txt: {version}"
+        elif dist in PINNED:
             version = WCX_COMMIT
             pin = PINNED[dist]
         else:
@@ -115,7 +145,7 @@ def build_bom(third: dict[str, set[str]]) -> dict:
             },
             "properties": [
                 {"name": "sbom:generator", "value": "gen-python-sbom.py"},
-                {"name": "sbom:method", "value": "AST import scan (no lockfile available)"},
+                {"name": "sbom:method", "value": "AST import scan + requirements.txt pins"},
             ],
         },
         "components": components,
@@ -125,7 +155,8 @@ def build_bom(third: dict[str, set[str]]) -> dict:
 def main() -> int:
     local = collect_local_modules()
     third = scan_imports(local)
-    bom = build_bom(third)
+    pins = load_requirements_pins()
+    bom = build_bom(third, pins)
     out = ROOT / "sbom.python.cyclonedx.json"
     out.write_text(json.dumps(bom, indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {out} ({len(bom['components'])} components)")
