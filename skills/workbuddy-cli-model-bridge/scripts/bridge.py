@@ -38,6 +38,12 @@ SKILL_DIR = Path(__file__).resolve().parents[1]
 BUNDLED_PROVIDER_DIR = SKILL_DIR / "providers"
 DEFAULT_STATE_RELATIVE = Path(".config/workbuddy-cli-model-bridge")
 DEFAULT_WORKBUDDY_RELATIVE = Path(".workbuddy/models.json")
+
+# Mirrored from skills/wxmp-article-harvester/scripts/runtime_paths.py.
+# wcx is pulled from a pinned git commit so the installed source is
+# content-addressed; `pip install` fails if the commit is unavailable.
+WCX_PINNED_COMMIT = "37cf4d5fd6a0677c2137601292f6942ff731d4b9"
+WCX_SOURCE_REPO = "github.com/lovstudio/wcx"
 DEFAULT_PROXY_URL = "http://127.0.0.1:8317"
 
 
@@ -1311,6 +1317,68 @@ def cmd_sync(args: argparse.Namespace) -> int:
     return 0 if not changes["conflicts"] else 3
 
 
+def upstream_wcx_reachable(commit: str, timeout: int = 20) -> tuple[bool, str]:
+    """Best-effort check that the pinned wcx commit still exists upstream.
+
+    This is an explicit supply-chain confirmation action. It makes a single
+    outbound request only when the operator passes --check-reachability; the
+    default verify-upstream run is fully offline.
+    """
+    url = f"https://api.github.com/repos/lovstudio/wcx/commits/{commit}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "bridge-verify-upstream"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode())
+        subject = (data.get("commit", {}).get("message", "") or "").split("\n")[0][:80]
+        return True, subject
+    except Exception as exc:  # noqa: BLE001 - best-effort, reported transparently
+        return False, f"unreachable/offline: {type(exc).__name__}"
+
+
+def cmd_verify_upstream(args: argparse.Namespace) -> int:
+    """Report the upstream release-verification posture for CLIProxyAPI and wcx.
+
+    Read-only. Offline by default; pass --check-reachability to also probe the
+    pinned wcx commit against GitHub.
+    """
+    report: dict[str, Any] = {}
+
+    brew = shutil.which("brew")
+    if brew:
+        report["cliproxyapi"] = {
+            "install_method": "homebrew",
+            "formula": "cliproxyapi",
+            "installed": brew_formula_installed(brew),
+            "integrity": "Homebrew validates the bottle SHA256 recorded in the formula",
+            "trust": "Homebrew maintainers + formula publisher",
+        }
+    else:
+        report["cliproxyapi"] = {
+            "install_method": "homebrew",
+            "installed": False,
+            "note": "brew not found; install Homebrew interactively first",
+        }
+
+    wcx: dict[str, Any] = {
+        "pinned_commit": WCX_PINNED_COMMIT,
+        "source": WCX_SOURCE_REPO,
+        "integrity": "git commit pin (content-addressed; pip install fails if the commit is missing)",
+        "signature": "none (upstream publishes no signed release)",
+        "bump_policy": "only after deliberate review; keep WCX_COMMIT and WCX_INSTALL_SPEC in sync",
+    }
+    if getattr(args, "check_reachability", False):
+        reachable, detail = upstream_wcx_reachable(WCX_PINNED_COMMIT)
+        wcx["commit_reachable"] = reachable
+        if reachable:
+            wcx["commit_subject"] = detail
+    else:
+        wcx["commit_reachable"] = "not checked (offline; pass --check-reachability to probe GitHub)"
+    report["wcx"] = wcx
+
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Bridge CLI subscription models into WorkBuddy on macOS")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1350,6 +1418,17 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate-provider", help="Validate a bundled or local Provider manifest")
     validate.add_argument("path")
     validate.set_defaults(func=cmd_validate_provider)
+
+    verify_upstream = subparsers.add_parser(
+        "verify-upstream",
+        help="Report upstream release-verification posture for CLIProxyAPI (Homebrew) and wcx (git pin)",
+    )
+    verify_upstream.add_argument(
+        "--check-reachability",
+        action="store_true",
+        help="Also probe the pinned wcx commit against GitHub (makes one outbound request)",
+    )
+    verify_upstream.set_defaults(func=cmd_verify_upstream)
     return parser
 
 

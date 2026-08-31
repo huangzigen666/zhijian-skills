@@ -25,6 +25,15 @@ python3 <skill-root>/scripts/preflight.py --json
 
 缺少依赖时明确报告并停止。安装命令见 `README.md`。登录过期由 `wcx_run.py` 打开浏览器刷新一次；token 不打印，cookie 不进入进程参数。
 
+## 上游信任（wcx 版本锁定）
+
+`wcx` 通过 git commit 固定安装（`runtime_paths.py` 的 `WCX_COMMIT` / `WCX_INSTALL_SPEC`）：
+
+- **固定提交**：`37cf4d5fd6a0677c2137601292f6942ff731d4b9`（已验证存在：*"feat: bump to 0.2.0, add --version / -V flag"*，2026-04-21）。
+- **完整性机制**：git commit 固定是内容寻址的——若提交缺失或被改写，`pip install` 会失败，因此安装到的源码必定是该版本（前提是源仓库可信）。
+- **限制**：上游**不发布签名发布物**，除 GitHub 账号外无发布者身份证明。
+- **升级策略**：仅在审慎review新提交后修改 `WCX_COMMIT` 与 `WCX_INSTALL_SPEC`，并保持二者同步。
+
 ## 意图路由
 
 | 用户意图 | 执行 |
