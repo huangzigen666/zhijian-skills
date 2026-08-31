@@ -68,8 +68,8 @@
 
 - **`wcx`**：锁版本 commit `37cf4d5fd6a0677c2137601292f6942ff731d4b9`（`runtime_paths.py`）。
 - **CLIProxyAPI**：经 Homebrew 安装，非本仓库控制的上游二进制（信任边界）。
-- **Node 依赖**：`wechat-article-search` 指示 `npm install -g cheerio`（全局，需用户执行）；`wechat-styler` 依赖 `opencli`。
-- **Python 依赖**：`playwright`（pip）、各 skill 自有 `package.json` / `requirements` 未统一锁定，建议补充 SBOM。
+- **Node 依赖（已锁定 + SBOM）**：`codex-theme-studio`、`wechat-article-search`、`wechat-styler` 均含 `package.json` + `package-lock.json`（lockfileVersion 3，已解析完整依赖树）。`wechat-article-search` 的安装指引已从全局 `npm install -g cheerio` 改为遵循锁文件的本地 `npm ci` / `npm install`。每个 Node skill 目录下已生成 `sbom.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-node-sbom.mjs` 依据锁文件生成；重新生成：`node scripts/gen-node-sbom.mjs`。
+- **Python 依赖**：`playwright`（pip）、各 skill 自有脚本；`wxmp-article-harvester` 的 `wcx` 已锁 commit。Python 侧 SBOM 暂未生成（本项范围限于 Node skill）。
 
 ---
 

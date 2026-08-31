@@ -26,11 +26,13 @@ visibility: "public"
 ## 工作流程
 
 ### 步骤1: 确认已安装依赖包
-该脚本依赖NodeJS依赖包 `cheerio`，建议先执行全局安装或在项目中安装：
+该脚本依赖 NodeJS 依赖包 `cheerio`。本目录已用 `package.json` + `package-lock.json` 锁定版本，**请在技能目录内执行本地安装**（遵循锁文件、可复现、不污染全局）：
 
 ```bash
-npm install -g cheerio
+npm ci          # 按 package-lock.json 精确安装；也可用 npm install
 ```
+
+> 注意：不要使用 `npm install -g cheerio` 全局安装——它会绕过锁文件并造成全局环境漂移。
 
 ### 步骤2: 确认搜索词语数量
 1、 确认关键词与数量
