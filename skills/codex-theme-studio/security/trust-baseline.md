@@ -27,8 +27,8 @@ The Skill does not modify `app.asar`, the signed application bundle, authenticat
 The repository tests cover package, payload, route, art-placement, native-UI, privacy, recovery, and resident-manager lifecycle contracts. The network and permission policies record the approved scopes and enforcement points.
 
 - **Independent security review**: ✅ Provided 2026-08-31 (automated internal review — `security/independent-review-2026-08-31.md`). Note: reviewer is the same tooling class, not an external human auditor.
-- **Live public installer on a clean macOS account**: 🟡 Partially closed. All static checks and contract tests pass headless; the *live* installer (`live macOS doctor`) was not executed in the review environment (needs a real Codex.app + browser CDP). Manual procedure in `independent-review-2026-08-31.md`.
-- **Live ImageGen invocation through every supported host**: 🟡 Partially closed. ImageGen *contract presence* verified by `skill-contract.test.mjs` (PASS); *live* invocation delegated to the host ImageGen Skill and not executed in the review environment.
+- **Live public installer on a clean macOS account**: 🟡 Partially closed (2026-09-01 attempt). Real-machine offline `doctor-macos.sh` PASSES against the actual Codex.app (`officialAppSignatureValid: true`, `modifiesAppAsar: false`), and the full headless contract suite PASSES (8 PASS / 1 SKIP). The *live* CDP activation could not be driven in the agent sandbox — launching Codex with a loopback debug port was blocked by the sandbox runtime (not a code defect). A manual run on a clean account is still required; procedure in `security/live-verification-2026-09-01.md`.
+- **Live ImageGen invocation through every supported host**: 🟡 Partially closed (2026-09-01 attempt). ImageGen *contract presence* verified by `skill-contract.test.mjs` (PASS); a *live* asset generation was executed on this agent host (see `security/live-verification-2026-09-01.md`), but the Codex Desktop host's `$imagegen` path still needs a manual confirm by the operator on the deployment host.
 
 Generated trust reports remain local ignored evidence. This checked-in baseline is the release source of truth until newer reviewed evidence replaces it.
 
@@ -37,3 +37,10 @@ Generated trust reports remain local ignored evidence. This checked-in baseline 
 - Automated security review executed: static source review + `tests/run-tests.sh` (exit 0; 8 PASS, 1 SKIP = live macOS doctor).
 - Evidence artifact: `security/independent-review-2026-08-31.md`.
 - Outstanding live-only gaps: clean-account installer run, and live ImageGen invocation per host — both require a live macOS + Codex.app + browser CDP environment to fully close.
+
+## Security review addendum (2026-09-01) — live attempt
+
+- Attempted the two outstanding live-only gaps on the real machine (macOS arm64, Codex `26.825.51511`, team `2DC432GLL2`).
+- **Passed on the real machine**: `tests/run-tests.sh` (8 PASS / 1 SKIP) and offline `doctor-macos.sh` (`officialAppSignatureValid: true`, `modifiesAppAsar: false`). Live ImageGen asset generation also succeeded on this agent host.
+- **Blocked**: the live installer's CDP activation — the agent sandbox prevented launching Codex with an attached loopback debug port, so `LIVE=true` could not be reached. This is an agent-runtime constraint, not a skill defect. Partial artifacts were removed and the machine restored to a clean state.
+- Evidence artifact: `security/live-verification-2026-09-01.md` (includes the manual procedure to fully close both gaps on a clean account).

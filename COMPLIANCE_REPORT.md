@@ -50,7 +50,7 @@
 
 | 项 | 性质 | 处置 |
 |---|---|---|
-| theme-studio 两项 live-only 缺口（干净账号安装器实测、各 host ImageGen 实调用） | 环境限制，本会话无法执行 | 已文档化手动验证步骤；标记为"待 live 确认" |
+| theme-studio 两项 live-only 缺口（干净账号安装器实测、各 host ImageGen 实调用） | 环境限制（agent 沙箱无法启动带 CDP 的 GUI） | 2026-09-01 已在本机实跑：离线 doctor + 全套 headless 合约测试 PASS（真实 Codex.app，签名有效、未改 asar），ImageGen 本宿主实生成成功；live CDP 激活被 agent 沙箱拦截（非代码缺陷），残留产物已清理。两项缺口由"未执行"推进为"部分闭合/待干净账号手动确认"，手册见 `skills/codex-theme-studio/security/live-verification-2026-09-01.md` |
 | `wcx` 无上游签名 | 上游现状，超出仓库能力 | 文档化 + `verify-upstream` 可复核 + 升级需审慎 review |
 | Python 侧 SBOM 已生成且依赖已固定 | 范围限定 | `sbom.python.cyclonedx.json` 已产出（CycloneDX 1.5，AST 扫描 + `requirements.txt`）；`wcx` 锁 commit、`playwright==1.62.0`、`weasyprint==69.0` 均已固定 |
 | 功能性外联（metaso.cn / mp.weixin.qq.com / chatgpt.com） | skill 固有需求 | 已在 `SECURITY.md` 逐条披露，凭证均取自环境变量或浏览器会话 |
@@ -67,4 +67,4 @@
 - 透明度：所有残留项均**显式披露**，未做掩盖；其中 live-only 缺口属环境限制，上游无签名属上游现状。
 - 过程合规：推送经用户逐次显式授权，R1 guard 白名单为用户可控的安全控制修改，未绕过任何守卫。
 
-**建议后续（非阻塞）**：① 在干净 macOS 账号实跑 theme-studio live doctor 以闭合最后两项 live 缺口；② 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。
+**建议后续（非阻塞）**：① theme-studio 两项 live 缺口已部分闭合（离线 doctor + headless 套件在本机真实 Codex.app 通过，ImageGen 本宿主实生成成功）；最终 live CDP 激活与 Codex Desktop 宿主 `$imagegen` 仍需在干净 macOS 账号手动实跑以完全闭合，手册见 `skills/codex-theme-studio/security/live-verification-2026-09-01.md`；② 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。

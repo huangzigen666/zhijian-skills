@@ -57,3 +57,12 @@ Until those live steps are run on a clean account, the two gaps remain "partiall
 - This review did not execute the skill against a live Codex app or a real browser CDP session.
 - "Independent" here means automated and reproducible, not a third-party human audit.
 - No dynamic/fuzz testing or external penetration testing was performed.
+
+## Live-attempt addendum (2026-09-01)
+
+A follow-up attempt was made to close the two remaining live-only gaps on the real machine (macOS arm64, Codex `26.825.51511`, team `2DC432GLL2`):
+
+- **Real-machine verification passed**: `tests/run-tests.sh` → 8 PASS / 1 SKIP; offline `doctor-macos.sh` → `pass: true`, `officialAppSignatureValid: true`, `modifiesAppAsar: false`. Live ImageGen asset generation also succeeded on this agent host (output captured in the evidence file).
+- **Live CDP activation blocked**: the agent sandbox prevented launching Codex with an attached loopback debug port, so the `live macOS doctor` could not reach `LIVE=true`. This is an agent-runtime constraint, not a skill defect. Partial install artifacts were removed and the machine restored to a clean state.
+- **Net status**: the two gaps move from "not executed" to "partially closed / pending live confirmation on a clean account." Full closure still requires the operator to run the live installer + live ImageGen on a real clean macOS account.
+- Evidence: `security/live-verification-2026-09-01.md`.
