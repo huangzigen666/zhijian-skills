@@ -136,23 +136,6 @@ def skill_admin() -> str:
     return svg("Codex Skill Admin", "A reversible switchboard for auditing, disabling, restoring, and verifying local Codex Skills.", bg, "prompt-switchboard", body)
 
 
-def theme_studio() -> str:
-    bg, ink, purple, coral, mint, paper = "#EEE9FF", "#24213A", "#6C4CF5", "#FF6B6B", "#59C9A5", "#FFFDF8"
-    body = [
-        text(54, 52, "CODEX EXPERIENCE / REVERSIBLE", 15, purple, 750, family=MONO, letter_spacing="1.8"),
-        text(54, 116, "Theme", 54, ink, 760), text(54, 172, "Studio", 54, ink, 760),
-        text(54, 216, "Brand the app. Verify every route.", 22, "#5F5874", 500),
-        rect(54, 257, 46, 46, purple, 8), rect(112, 257, 46, 46, coral, 8), rect(170, 257, 46, 46, mint, 8), rect(228, 257, 46, 46, ink, 8),
-        text(300, 286, "APPLY  •  PAUSE  •  RESTORE", 16, ink, 700, family=MONO),
-        rect(520, 42, 620, 276, paper, 14, ink, 2),
-        rect(520, 42, 620, 38, ink, 12), circle(545, 61, 5, coral), circle(562, 61, 5, "#FFD166"), circle(579, 61, 5, mint),
-        rect(544, 100, 138, 194, "#E6E0F6", 10),
-    ]
-    for index, width in enumerate((82, 104, 65, 98, 76)):
-        body += [rect(564, 126 + index * 31, width, 7, "#8B83A3", 3)]
-    body += [rect(706, 100, 408, 82, bg, 10), text(730, 132, "WELCOME BACK", 15, purple, 750, family=MONO), text(730, 160, "Codex, in your visual language.", 22, ink, 700), rect(706, 202, 194, 92, ink, 10), rect(920, 202, 194, 92, "#F6EFE7", 10), circle(758, 247, 18, coral), circle(972, 247, 18, mint), text(808, 252, "task route", 16, paper, 650), text(1024, 252, "home route", 16, ink, 650), text(1094, 310, "VERIFY ✓", 14, mint, 800, family=MONO, text_anchor="end")]
-    return svg("Codex Theme Studio", "A reversible Codex Desktop theme shown as a branded interface with verified routes.", bg, "theme-artboards", body)
-
 
 def enterprise_clone() -> str:
     bg, paper, green, gold, ink = "#163B2D", "#F5F0E2", "#7ED6A6", "#E9C46A", "#122018"
@@ -336,7 +319,6 @@ HEROES = {
     ROOT / "docs/skills/codex-doctor/assets/readme/hero.svg": codex_doctor,
     ROOT / "docs/skills/codex-model-routing-team/assets/readme/hero.svg": routing_team,
     ROOT / "docs/skills/codex-skill-admin/assets/readme/hero.svg": skill_admin,
-    ROOT / "docs/skills/codex-theme-studio/assets/readme/hero.svg": theme_studio,
     ROOT / "docs/skills/enterprise-clone-builder/assets/readme/hero.svg": enterprise_clone,
     ROOT / "docs/skills/gpt56-sol-pro-consult/assets/readme/hero.svg": sol_pro_consult,
     ROOT / "docs/skills/html-express/assets/readme/hero.svg": html_express,

@@ -30,9 +30,8 @@
 | `wechat-styler` | `https://mp.weixin.qq.com/` | 浏览器内（opencli）发布/排版操作 | 浏览器会话 profile（不落盘明文） | skill 内 |
 | `gpt56-sol-pro-consult` | `https://chatgpt.com/` | 浏览器内（opencli）打开对话 | 浏览器会话 | skill 内 |
 | `workbuddy-cli-model-bridge` | `http://127.0.0.1:8317` | **仅 loopback**，CLIProxyAPI 本地代理 | 本地代理 client key（0600） | skill / `bridge.py` |
-| `codex-theme-studio` | `127.0.0.1`（Chrome DevTools） | **仅 loopback**，本地 CDP 注入/校验 | 无 | `security/network_policy.json`（`outbound_internet: deny`） |
 
-**合规说明**：除 `codex-theme-studio` 明确声明 `outbound_internet: deny` 外，其余涉及外联的 skill 均为功能所必需，且凭证均取自环境变量或浏览器会话，无硬编码。建议使用者对上表逐条确认授权。
+**合规说明**：所有涉及外联的 skill 均为功能所必需，且凭证均取自环境变量或浏览器会话，无硬编码。建议使用者对上表逐条确认授权。
 
 ---
 
@@ -56,9 +55,7 @@
 
 | Skill | 行为 | 授权方式 | 合规 |
 |---|---|---|---|
-| `codex-theme-studio` | 可选 LaunchAgent `~/Library/LaunchAgents`；owner-only 恢复态 `~/Library/Application Support/CodexThemeStudio`；写入 `~/.codex/codex-theme-studio` | **显式 opt-in + 独立持久化授权**，不主动启动应用 | ✅ 已 gate |
 | `workbuddy-cli-model-bridge` | 启动 CLIProxyAPI loopback 服务（Homebrew 安装） | 用户 `--apply` 显式授权 | ✅ |
-| `codex-theme-studio` 脚本 `rm -rf` | 删除 `$INSTALL_ROOT.installing.$$` / `.previous.$$` 等派生临时目录 | 目标由固定 `INSTALL_ROOT` 派生，非用户可控 | ✅ 无宽泛删除 |
 
 所有持久化均为用户目录范围内，未触及系统级路径或他人数据。
 
@@ -69,7 +66,7 @@
 - **`wcx`**：锁版本 commit `37cf4d5fd6a0677c2137601292f6942ff731d4b9`（已验证存在，见 `wxmp-article-harvester/SKILL.md` 上游信任小节）。git commit 固定为内容寻址，安装时由 `pip` 强制校验；上游无签名发布物，升级需审慎 review。
 - **CLIProxyAPI**：经 Homebrew 公式 `cliproxyapi` 安装，非本仓库控制的上游二进制（信任边界）；Homebrew 在安装时校验 bottle SHA256（真实 checksum 机制）。
 - **上游校验命令**：`python3 scripts/bridge.py verify-upstream`（离线报告 CLIProxyAPI/wcx 校验态势）；`--check-reachability` 额外探测 wcx 固定提交是否仍可达。详见 `workbuddy-cli-model-bridge/references/security-boundaries.md` 的 "Upstream supply-chain trust"。
-- **Node 依赖（已锁定 + SBOM）**：`codex-theme-studio`、`wechat-article-search`、`wechat-styler` 均含 `package.json` + `package-lock.json`（lockfileVersion 3，已解析完整依赖树）。`wechat-article-search` 的安装指引已从全局 `npm install -g cheerio` 改为遵循锁文件的本地 `npm ci` / `npm install`。每个 Node skill 目录下已生成 `sbom.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-node-sbom.mjs` 依据锁文件生成；重新生成：`node scripts/gen-node-sbom.mjs`。
+- **Node 依赖（已锁定 + SBOM）**：`wechat-article-search`、`wechat-styler` 均含 `package.json` + `package-lock.json`（lockfileVersion 3，已解析完整依赖树）。`wechat-article-search` 的安装指引已从全局 `npm install -g cheerio` 改为遵循锁文件的本地 `npm ci` / `npm install`。每个 Node skill 目录下已生成 `sbom.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-node-sbom.mjs` 依据锁文件生成；重新生成：`node scripts/gen-node-sbom.mjs`。
 - **Python 依赖（已生成 SBOM）**：仓库无 Python 锁文件，采用 AST import 扫描生成 `sbom.python.cyclonedx.json`（CycloneDX 1.5），由 `scripts/gen-python-sbom.py` 产出；重新生成：`python3.12 scripts/gen-python-sbom.py`。
   - `wcx`（被 `wxmp-article-harvester` 使用）：已锁 commit `37cf4d5fd6a0677c2137601292f6942ff731d4b9` ✅ 已固定。
   - `playwright`（被 `wxmp-article-harvester` 使用）：已固定 `==1.62.0`（`requirements.txt`）。
@@ -85,25 +82,14 @@
 
 ---
 
-## 6. 已知证据缺口（透明度）
-
-依据 `codex-theme-studio/security/trust-baseline.md` 的自述，以下证据**仍缺失**，不影响当前代码合规判断，但作为合规交付物应补齐：
-
-- 独立安全评审证据（missing）
-- 干净 macOS 账号现场安装器验证（missing）
-- 各 host 的 ImageGen 调用验证（missing）
-
----
-
-## 7. 整改优先级（来自核查）
+## 6. 整改优先级（来自核查）
 
 1. **[中]** 本文件即为仓库级外联/凭证/持久化统一清单——持续维护。
-2. **[中]** `codex-theme-studio` 补 "现场安装器验证" 与 "独立安全评审" 证据，闭合 trust-baseline 缺口。
-3. **[低]** 为 Node 类 skill 补充依赖锁定与 SBOM（已完成：3 个 Node skill 含 `package-lock.json` + `sbom.cyclonedx.json`）；Python 侧 SBOM 已生成（`sbom.python.cyclonedx.json`），且 `playwright` / `wcx` / `weasyprint` 均已在 `requirements.txt` 固定版本。
-4. **[低]** 确认 `CLIProxyAPI` / `wcx` 上游的发布校验（checksum/签名）。
+2. **[低]** 为 Node 类 skill 补充依赖锁定与 SBOM（已完成：`wechat-article-search`、`wechat-styler` 含 `package-lock.json` + `sbom.cyclonedx.json`）；Python 侧 SBOM 已生成（`sbom.python.cyclonedx.json`），且 `playwright` / `wcx` / `weasyprint` 均已在 `requirements.txt` 固定版本。
+3. **[低]** 确认 `CLIProxyAPI` / `wcx` 上游的发布校验（checksum/签名）。
 
 ---
 
-## 8. 漏洞报告
+## 7. 漏洞报告
 
 如发现安全漏洞，请勿公开提 issue，通过仓库维护者私信或安全通道报告。报告请包含：复现步骤、受影响 skill、潜在影响与证据（日志/截图）。

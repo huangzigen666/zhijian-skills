@@ -12,7 +12,6 @@ EXPECTED_SKILLS = {
     "codex-handoff",
     "codex-model-routing-team",
     "codex-skill-admin",
-    "codex-theme-studio",
     "enterprise-clone-builder",
     "gpt56-sol-pro-consult",
     "html-express",
