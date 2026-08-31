@@ -7,8 +7,10 @@ not packaged, so there is no lockfile to read. Instead we statically scan
 every .py file, classify imports as stdlib / local / third-party, and emit a
 SBOM of the discovered third-party distributions with their pin status.
 
-Usage: python3 scripts/gen-python-sbom.py
+Usage: python3 scripts/gen-python-sbom.py [--strict]
 Output: sbom.python.cyclonedx.json (repo root)
+  --strict  exit non-zero if any discovered dep lacks a requirements.txt pin
+           (useful in CI / pre-commit to block unpinned additions)
 """
 
 from __future__ import annotations
@@ -153,6 +155,7 @@ def build_bom(third: dict[str, set[str]], pins: dict[str, str]) -> dict:
 
 
 def main() -> int:
+    strict = "--strict" in sys.argv[1:]
     local = collect_local_modules()
     third = scan_imports(local)
     pins = load_requirements_pins()
@@ -160,9 +163,19 @@ def main() -> int:
     out = ROOT / "sbom.python.cyclonedx.json"
     out.write_text(json.dumps(bom, indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {out} ({len(bom['components'])} components)")
+    unpinned = []
     for c in bom["components"]:
         status = "pinned" if c["version"] != "unpinned" else "UNPINNED"
         print(f"  - {c['name']} [{status}] used by {c['properties'][0]['value']}")
+        if c["version"] == "unpinned":
+            unpinned.append((c["name"], c["properties"][0]["value"]))
+    if unpinned:
+        print("\nWARNING: the following third-party deps are NOT pinned in requirements.txt:")
+        for name, used_by in unpinned:
+            print(f"  - {name} (used by {used_by}) -> add a version pin to requirements.txt")
+        if strict:
+            print("\n--strict: refusing to emit an SBOM with unpinned deps.")
+            return 1
     return 0
 
 

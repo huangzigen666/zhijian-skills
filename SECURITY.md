@@ -76,6 +76,13 @@
   - `weasyprint`（被 `leadbook` 使用）：已固定 `==69.0`（`requirements.txt`）。
   - 全部 Python 依赖现由仓库根 `requirements.txt` 统一固定；重新生成 SBOM：`python3.12 scripts/gen-python-sbom.py`。
 
+- **依赖升级流程（Python）**：任何 `playwright` / `weasyprint` / `wcx` 版本变更，或新增 Python 第三方依赖时，必须同步以下两项，二者缺一不可：
+  1. 更新仓库根 `requirements.txt` 中的固定版本（新增依赖需补一行 pin；`wcx` 走 `git+https://github.com/lovstudio/wcx.git@<commit>` 形式）。
+  2. 重新生成 SBOM：`python3.12 scripts/gen-python-sbom.py`（可选 `--strict`，存在未固定依赖时以非零码退出，便于 CI / pre-commit 拦截）。
+  3. 提交 `requirements.txt` 与 `sbom.python.cyclonedx.json` 两个文件（建议同一次提交）。
+  - 校验：生成器会扫描所有 `skills/**/*.py` 的 import，凡出现在 `requirements.txt` 之外的第三方依赖都会被标记为 `UNPINNED` 并打印 WARNING；若带 `--strict` 则直接失败，防止未固定依赖被合入。
+  - `wcx` 升级额外注意：改动 `requirements.txt` 中的 commit 时，须同步 `wxmp-article-harvester/scripts/runtime_paths.py` 的 `WCX_COMMIT` / `WCX_INSTALL_SPEC`，并运行 `python3 scripts/bridge.py verify-upstream --check-reachability` 确认新提交仍可达。
+
 ---
 
 ## 6. 已知证据缺口（透明度）
