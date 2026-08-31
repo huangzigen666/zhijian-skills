@@ -7,8 +7,8 @@
 
 CodeBuddy 在用户级配置中安装了一个 PreToolUse 钩子：
 
-- 脚本：`/Users/huanghao/.codebuddy/hooks/r1-command-guard.py`
-- 注册：`/Users/huanghao/.codebuddy/settings.json` → `hooks.PreToolUse`（matcher: `Bash`）
+- 脚本：`~/.codebuddy/hooks/r1-command-guard.py`
+- 注册：`~/.codebuddy/settings.json` → `hooks.PreToolUse`（matcher: `Bash`）
 
 该守卫默认**拒绝所有 `git push`**（以及 `reset --hard`、`clean -f`、`branch -D`、`checkout/restore .`），以防 agent 误推送。
 
@@ -17,7 +17,7 @@ CodeBuddy 在用户级配置中安装了一个 PreToolUse 钩子：
 为支持本仓库通过 agent 推送，在守卫中新增了**仅针对本仓库 `git push`** 的放行：
 
 - 新增常量 `PUSH_ALLOWLIST_DIRS = ("zhijian-skills",)`
-- 当 Bash 命令字符串中出现 `zhijian-skills` 仓库路径（如 `cd /private/tmp/zhijian-skills && git push` 或 `git -C /private/tmp/zhijian-skills push`）时，仅放行 `git push` 模式。
+- 当 Bash 命令字符串中出现 `zhijian-skills` 仓库路径（如 `cd <repo-root> && git push` 或 `git -C <repo-root> push`）时，仅放行 `git push` 模式。
 - **其余破坏性 Git 操作（含本仓库内）一律仍拒绝**：`reset --hard`、`clean -f`、`branch -D`、`checkout/restore .`。
 - 其他仓库的 `git push` 仍被拒绝。
 
@@ -34,7 +34,7 @@ CodeBuddy 在用户级配置中安装了一个 PreToolUse 钩子：
 
 ## 如何回滚
 
-编辑 `/Users/huanghao/.codebuddy/hooks/r1-command-guard.py`：
+编辑 `~/.codebuddy/hooks/r1-command-guard.py`：
 - 删除 `PUSH_ALLOWLIST_DIRS` 常量，或
 - 将 `git_push_pattern` 的放行分支（`if any(token in command …): raise SystemExit(0)`）移除，
 
