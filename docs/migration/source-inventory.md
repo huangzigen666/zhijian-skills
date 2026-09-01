@@ -5,7 +5,6 @@ Recorded on 2026-07-16 before canonical import. Local working copies are treated
 | Skill | Selected runtime baseline | Public baseline | Decision | Excluded from payload |
 | --- | --- | --- | --- | --- |
 | `codex-doctor` | Local Codex copy; entrypoint digest `0f3ecdf0…` | `c79a9ec61720516af821397c5f96ad2753ecf10c` | Runtime files match the public release; import the complete public package | Human README files |
-| `enterprise-clone-builder` | No active local copy | `7ccd2c55dd88a4b4d9bfd591abd59a9c870b266d` | Public repository is authoritative | Human README |
 | `wechat-styler` | Active vault copy; candidate digest `7e8601e8…` | `f7b593eb854eefce810919cf3d936cd19246a7ff` | Local runtime, references, themes, tests, and publishing scripts win; public repo supplies missing public metadata | Generated previews, preview frames, `node_modules`, human README |
 | `wechat-article-search` | Active vault copy; candidate digest `7e25da90…` | `8011e128a7e21d808a89d4ac034d8460ee1abdab` | Local entrypoint, lockfile, package metadata, and script win; public repo supplies agent metadata and license | Human README |
 | `html-express` | Active vault copy; candidate digest `53c35ade…` | `c39644b3725ec17152bf92bf8e8de77e6832b176` | Local entrypoint and assets win; public repo supplies agent metadata and license | Internal design/plan notes, human README |

@@ -123,7 +123,6 @@ DISCOURSE_MARKERS = [
     "公众号",
     "wxmp",
     "wechat",
-    "web-clipper",
     "C-discourse",
     "L5-discourse",
     "观点层",

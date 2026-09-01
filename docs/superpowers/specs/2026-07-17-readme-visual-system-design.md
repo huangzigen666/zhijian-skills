@@ -33,7 +33,6 @@ Each hero uses a 1200 by 360 viewBox, includes `<title>` and `<desc>`, carries a
 | `codex-doctor` | diagnostic pulse and verified checks |
 | `codex-model-routing-team` | lead node routing bounded worker threads |
 | `codex-skill-admin` | visible/disabled Skill registry controls |
-| `enterprise-clone-builder` | source materials becoming a structured knowledge tree |
 | `html-express` | dense notes becoming a composed HTML information board |
 | `skill-open-sourcer` | local Skill passing gates into canonical and mirror releases |
 | `wechat-article-search` | query flowing through article results and source labels |

@@ -93,27 +93,6 @@
       "harnesses": ["codex"]
     },
     {
-      "name": "enterprise-clone-builder",
-      "lifecycle": "active",
-      "version": "1.0.2",
-      "path": "skills/enterprise-clone-builder",
-      "documentation": "docs/skills/enterprise-clone-builder/README.md",
-      "documentation_zh": "docs/skills/enterprise-clone-builder/README.zh-CN.md",
-      "changelog": "docs/changelogs/enterprise-clone-builder.md",
-      "canonical_tag": "enterprise-clone-builder/v1.0.2",
-      "validation": {
-        "commands": [],
-        "live_smoke": null
-      },
-      "capabilities": {
-        "network": "required",
-        "subprocess": "required",
-        "filesystem": "write",
-        "credentials": "none"
-      },
-      "harnesses": ["codex", "claude-code", "agents"]
-    },
-    {
       "name": "gpt56-sol-pro-consult",
       "lifecycle": "active",
       "version": "1.0.0",

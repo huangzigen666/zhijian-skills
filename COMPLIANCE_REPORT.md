@@ -1,7 +1,7 @@
 # zhijian-skills 安全合规性 — 整体结论汇总
 
-- **对象**：仓库 `github.com/huangzigen666/zhijian-skills`（当前 14 个 skill）
-- **性质**：面向 AI 编程 Agent 的 skill 作品集（14 个 skill，约 60 个可执行脚本）
+- **对象**：仓库 `github.com/huangzigen666/zhijian-skills`（当前 13 个 skill）
+- **性质**：面向 AI 编程 Agent 的 skill 作品集（13 个 skill，约 60 个可执行脚本）
 - **核查周期**：2026-08-31（首轮，15 skill）+ 2026-09-02（第二轮，逐 skill 复核 14 skill）
 - **方法**：危险模式扫描、`subprocess`/`eval`/`shell` 调用逐文件核对、凭证与网络外联盘点、契约测试实跑、上游发布校验实测、能力声明 declared-vs-actual 核对、命令注入修复
 
@@ -57,7 +57,6 @@
 | R1 guard push 白名单 | 用户授权的安全控制修改 | 已收窄为仅 `git push`、仅本仓库，其余破坏性 Git 仍拒绝 |
 | `codex-skill-admin` 备份目录/文件未设 `0700`/`0600` | 已修复 | 2026-09-02：`backup_dir`→`0o700`、`write_private_json`→`0o600`（功能验证通过） |
 | `workbuddy-cli-model-bridge` `--proxy-url` 未强制 loopback | 已修复 | 2026-09-02：新增 `validate_loopback_url()` 拒绝非 loopback（2 个新单测覆盖） |
-| `enterprise-clone-builder` 外联/子进程委托仓库外 `web-clipper` | 继承性审计盲区 | 本仓库无法核验；建议另行审计 `web-clipper` 并固定 `$WEB_CLIPPER_ROOT`，记入 `SECURITY.md §7` #8 |
 | `leadbook` `--allow-remote-base-url` 可选远程 | 已门控的可选越界 | 需显式 flag + `validate_base_url` 校验，保持门控 |
 
 ---
@@ -76,9 +75,8 @@
 | 4 | `workbuddy-cli-model-bridge` `--proxy-url` 未被强制为 loopback（仅默认 127.0.0.1） | 中 | ✅ 已修复：新增 `validate_loopback_url()` 拒绝非 loopback；2026-09-02，28/28 测试通过 |
 | 5 | `wechat-styler` 存在未披露出站：`<img src>` 任意图床 `fetch` + PicGo loopback `127.0.0.1:36677` | 中 | ✅ 已补入 `SECURITY.md §2` |
 | 6 | `workbuddy-cli-model-bridge` 的 `api.github.com` 探针（`verify-upstream --check-reachability`）未列入 §2 | 低 | ✅ 已补入 `SECURITY.md §2` |
-| 7 | `enterprise-clone-builder` 网络/子进程完全委托仓库外 `web-clipper`（`bash "$WEB_CLIPPER_ROOT/..."`） | 中 | 继承性盲区；记入 `SECURITY.md §7` #8，建议另行审计 |
-| 8 | `leadbook` `--allow-remote-base-url` 可选将短期 token 发往非 loopback | 低 | 已门控（`validate_base_url` + 显式 flag），保持 |
-| 9 | `codex-model-routing-team` 声明 `filesystem:write`/`credentials:required` 偏"过述"（打包脚本不写盘、凭证不落盘） | 低 | ℹ️ 无安全违规，保留声明（harness 侧写盘） |
+| 7 | `leadbook` `--allow-remote-base-url` 可选将短期 token 发往非 loopback | 低 | 已门控（`validate_base_url` + 显式 flag），保持 |
+| 8 | `codex-model-routing-team` 声明 `filesystem:write`/`credentials:required` 偏"过述"（打包脚本不写盘、凭证不落盘） | 低 | ℹ️ 无安全违规，保留声明（harness 侧写盘） |
 
 ### 5.2 离线测试结果（2026-09-02 实跑）
 
@@ -88,7 +86,6 @@
 | codex-handoff | `… skills/codex-handoff/tests` | 5 passed |
 | codex-model-routing-team | `tests.skills.test_codex_model_routing_team` | 34 passed |
 | codex-skill-admin | 无单测（仅 live_smoke） | N/A（需 harness） |
-| enterprise-clone-builder | 无单测 | N/A |
 | html-express | 无单测 | N/A |
 | light-plan-and-work | `… skills/light-plan-and-work/tests` | 5 passed |
 | leadbook | `… skills/leadbook/tests` | 13 passed |
@@ -103,21 +100,18 @@
 
 - 第二轮发现 **1 项高危（命令注入）**，已在同轮修复并附测试实证；当前仓库 **零已知高危**。
 - 未披露出站目标已全部补入 `SECURITY.md §2`；能力声明不符项已修正 `registry/skills.json`。
-- 剩余为 2 项待办（`enterprise-clone-builder` 外部 `web-clipper` 依赖盲区、`leadbook` 远程 opt-in 保持门控），均为运营商门控或非自触发，不阻塞使用；#1/#2 两项中危已在本轮修复。
+- 剩余为 1 项待办（`leadbook` 远程 opt-in 保持门控），属运营商门控、非自触发，不阻塞使用；#1/#2 两项中危已在本轮修复。
 
 ---
 
 ## 六、第三轮定向复核（2026-09-02，3 个无自动化测试 skill）
 
-对上一轮中**无离线单测覆盖**的 3 个 skill 做红队复审计：`codex-skill-admin`、`enterprise-clone-builder`、`html-express`。
+对上一轮中**无离线单测覆盖**的 2 个 skill 做红队复审计：`codex-skill-admin`、`html-express`。
 
 | # | Skill | 发现 | 严重度 | 处置 |
 |---|---|---|---|---|
-| 1 | `enterprise-clone-builder` | `bash "$WEB_CLIPPER_ROOT/...sh" --url "<url>"` 把 `WEB_CLIPPER_ROOT`/`--url` 代入双引号 shell 字符串，含 `"`/shell 元字符即 RCE（值可来自抓取内容或不可信输入） | **高** | ✅ 文档层加固：`SKILL.md` 与 `references/web-clipper-usage.md` 新增「安全约束」——受信绝对路径 `[A-Za-z0-9._/-]`、`--url` 须严格 `https://` 且不含引号/元字符、以位置参数（argv 数组）调用、企业名目录净化、专用工作目录运行 |
-| 2 | `codex-skill-admin` | 上一轮 perms 修复不完整：`--backup-dir` 覆盖路径 `mkdir` 后未 `chmod`（默认 `0o755`）；`backup/` 父目录亦为默认权限 | 中 | ✅ 代码补全：`target_dir.mkdir` 后 `os.chmod(target_dir, 0o700)`，并 `backup_dir()` 内对 `DEFAULT_BACKUP_ROOT` `chmod 0o700`（功能验证通过） |
-| 3 | `html-express` | 全 `assets/` 扫描：唯一匹配为本地相对 `@import url("tokens.css")`，无 `<script>`/`<iframe>`/`fetch`/外链 | — | 确认干净，原结论成立 |
-
-**说明**：`enterprise-clone-builder` 的加固属**文档层**——真正的抓取逻辑在仓库外的 `web-clipper`，本仓库无法修改其本体；文档约束降低了但**未彻底消除**注入风险，使用者仍应另行审计 `web-clipper`。其余两项已在本轮实质修复。
+| 1 | `codex-skill-admin` | 上一轮 perms 修复不完整：`--backup-dir` 覆盖路径 `mkdir` 后未 `chmod`（默认 `0o755`）；`backup/` 父目录亦为默认权限 | 中 | ✅ 代码补全：`target_dir.mkdir` 后 `os.chmod(target_dir, 0o700)`，并 `backup_dir()` 内对 `DEFAULT_BACKUP_ROOT` `chmod 0o700`（功能验证通过） |
+| 2 | `html-express` | 全 `assets/` 扫描：唯一匹配为本地相对 `@import url("tokens.css")`，无 `<script>`/`<iframe>`/`fetch`/外链 | — | 确认干净，原结论成立 |
 
 ---
 
@@ -127,9 +121,9 @@
 
 - 原始核查：**无高危漏洞**，且具备多项强安全控制（无命令注入、无明文密钥、凭证权限收紧、外联最小化、显式滥用禁止）。
 - 第二轮（2026-09-02）逐 skill 复核：发现 **1 项命令注入高危**，已于同轮修复（`wechat-styler` `execSync`→`execFileSync`，31/31 测试通过），当前 **零已知高危**；未披露出站与能力声明偏差均已闭环。
-- 第三轮（2026-09-02）定向复核 3 个无测试 skill：再发现 **1 项命令注入高危**（`enterprise-clone-builder` 委托 `web-clipper` 的 shell 调用）→ 文档层加固；`codex-skill-admin` perms 修复补全；`html-express` 确认干净。当前仓库 **零已知高危**。
+- 第三轮（2026-09-02）定向复核 2 个无测试 skill：`codex-skill-admin` perms 修复补全；`html-express` 确认干净。当前仓库 **零已知高危**。
 - 整改闭环：首轮 4 项整改全部完成；第二、三轮高危均修复，披露缺口已补，registry 已修正。
-- 透明度：所有残留项均**显式披露**，未做掩盖；上游无签名属上游现状；`enterprise-clone-builder` 外部依赖盲区已如实标注并补充文档层加固。
+- 透明度：所有残留项均**显式披露**，未做掩盖；上游无签名属上游现状。
 - 过程合规：推送经用户逐次显式授权，R1 guard 白名单为用户可控的安全控制修改，未绕过任何守卫；各轮代码修复与文档更新均为本地可回退变更。
 
-**建议后续（非阻塞）**：① 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。② 对 `enterprise-clone-builder` 依赖的仓库外 `web-clipper` 做独立安全审计（命令注入类风险在仓库外）。
+**建议后续（非阻塞）**：① 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。

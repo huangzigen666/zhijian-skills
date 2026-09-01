@@ -13,7 +13,6 @@ SKILLS = (
     "codex-doctor",
     "codex-model-routing-team",
     "codex-skill-admin",
-    "enterprise-clone-builder",
     "gpt56-sol-pro-consult",
     "html-express",
     "light-plan-and-work",

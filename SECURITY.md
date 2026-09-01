@@ -41,13 +41,10 @@
 | `skill-open-sourcer` | `github.com/zjp1997720/zhijian-skills` | `git`/`gh` 同步与发布 | 环境 `gh`/git 凭证（skill 不读取） | `git_sync_guard.py` |
 | `codex-skill-admin` | `ws://127.0.0.1:<port>` / `http://127.0.0.1:<port>/readyz` | 本地 `codex app-server`（loopback） | 无（继承本地会话） | `codex_skill_admin.py:57,74` |
 | `codex-model-routing-team` | `127.0.0.1` / `localhost`（loopback） | `model_preflight.py` 可选 canary 探针，拒绝非 loopback 与含凭证 URL | 环境变量 Bearer（不落盘/不打印） | `model_preflight.py:103-116,147` |
-| `enterprise-clone-builder` | （无仓库内代码外联） | 网络/子进程**完全委托**给仓库外的 `web-clipper` skill（`bash "$WEB_CLIPPER_ROOT/scripts/run_web_clipper.sh" --url "<url>"`） | 无（由 web-clipper 自行处理） | `references/web-clipper-usage.md` |
 | `codex-doctor` | 无脚本级外联 | 网络可达性由 `codex doctor --json` 子进程产生 | 无 | `scan_workspace.py:1080` |
 | `html-express` / `light-plan-and-work` | 无 | 纯静态/指引，无外联、无子进程 | 无 | — |
 
-**合规说明**：所有涉及外联的 skill 均为功能所必需；凭证均取自环境变量或浏览器会话，无硬编码密钥；除 `enterprise-clone-builder` 委托外部依赖外，出站目标均已在上表逐条列出。建议使用者逐条确认授权。
-
-**已知局限与加固**：`enterprise-clone-builder` 的实际外联/子进程面存在于仓库外的 `web-clipper`，本仓库无法静态核验（继承性审计盲区）。**但本仓库的调用方式本身存在命令注入风险**：`bash "$WEB_CLIPPER_ROOT/...sh" --url "<url>"` 把 `WEB_CLIPPER_ROOT` 与 `--url` 直接代入双引号 shell 字符串，若含 `"`/shell 元字符（来自抓取内容或不可信输入）即 RCE。已在 `SKILL.md`「安全约束」与 `references/web-clipper-usage.md`「安全约束」强制：**`WEB_CLIPPER_ROOT` 仅限受信绝对路径 `[A-Za-z0-9._/-]`**、**`--url` 须为严格 `https://` 且不含引号/元字符**、**以位置参数（argv 数组）调用而非拼接 shell 字符串**、**企业名称→目录须净化**、**专用工作目录运行**。属文档层加固（无法修改仓库外 web-clipper）；使用者仍应另行审计 `web-clipper` 本体。
+**合规说明**：所有涉及外联的 skill 均为功能所必需；凭证均取自环境变量或浏览器会话，无硬编码密钥；出站目标均已在上表逐条列出。建议使用者逐条确认授权。
 
 ---
 
@@ -79,7 +76,6 @@
 | `wechat-article-search` | `-o` 指定输出文件（任意路径，含家目录外） | 用户指定 | 用户指定 `-o` | ✅（内容非凭证） |
 | `wechat-styler` | 输出 HTML（`--output`）、发布报告（`/tmp` 默认）、`os.tmpdir()` 临时目录 | 用户家目录 / tmp | 用户指定 | ✅（profile 由 OpenCLI 管理） |
 | `gpt56-sol-pro-consult` | 临时 packet 文件（`tempfile`，`finally` 中清理）、`-o` 附件包 | tmp / 用户指定 | 用户指定 `-o` | ✅ |
-| `enterprise-clone-builder` | `{company}-企业分身/` 于**当前工作目录**（默认） | 用户工程（CWD 默认） | 用户指定路径 | ✅（注意默认写入 CWD） |
 | `html-express` / `light-plan-and-work` | 用户指定 `.html` / 计划产物 | 用户工程 | 用户指定 | ✅ |
 | `codex-doctor` / `codex-handoff` / `codex-model-routing-team` | 无脚本级写入（输出仅 stdout；写盘由 harness 侧按计划/ledger 进行） | — | — | ✅ |
 
@@ -135,9 +131,7 @@
 5. **[低→已修]** `registry/skills.json` 中 `wechat-article-search`（`subprocess`/`filesystem`）、`codex-skill-admin`（`filesystem`）声明与实测不符——已修正。
 6. **[中→已修]** `codex-skill-admin` 备份目录/文件未设 `0700`/`0600`（默认 umask）——已修复：`backup_dir()` 创建后 `chmod 0o700`，新增 `write_private_json()` 以 `0o600` 写所有备份 JSON（2026-09-02，功能验证 file=0600 / dir=0700）。
 7. **[中→已修]** `workbuddy-cli-model-bridge` 的 `--proxy-url` 未被强制为 loopback——已修复：新增 `validate_loopback_url()`，在 `cmd_sync`/`cmd_audit` 处校验 ∈ {127.0.0.1, localhost, ::1}（非 loopback 直接拒绝并附 `proxy_not_loopback` 错误）；新增 2 个单测覆盖接受/拒绝（2026-09-02，28/28 测试通过）。
-8. **[低]** `enterprise-clone-builder` 的外联/子进程面完全委托仓库外 `web-clipper`，属继承性审计盲区——建议使用者另行审计 `web-clipper` 并固定 `$WEB_CLIPPER_ROOT`。
-9. **[高→已修（文档层）]** `enterprise-clone-builder` 的 `bash "$WEB_CLIPPER_ROOT/...sh" --url "<url>"` 调用把 `WEB_CLIPPER_ROOT`/`--url` 代入双引号 shell 字符串，存在命令注入（RCE）风险——已在 `SKILL.md` 与 `references/web-clipper-usage.md` 新增「安全约束」强制：受信绝对路径 + 严格 https URL 校验 + 位置参数调用 + 企业名目录净化 + 专用工作目录（2026-09-02）。属文档层加固（web-clipper 本体在仓库外，无法在此修复）。
-10. **[中→已修]** `codex-skill-admin` 的 `--backup-dir` 覆盖路径此前未 `chmod`（默认 `0o755`）——已补全：`target_dir.mkdir` 后 `os.chmod(target_dir, 0o700)`，并 `backup_dir()` 内对 `DEFAULT_BACKUP_ROOT` 也 `chmod 0o700`（2026-09-02，功能验证通过）。
+8. **[中→已修]** `codex-skill-admin` 的 `--backup-dir` 覆盖路径此前未 `chmod`（默认 `0o755`）——已补全：`target_dir.mkdir` 后 `os.chmod(target_dir, 0o700)`，并 `backup_dir()` 内对 `DEFAULT_BACKUP_ROOT` 也 `chmod 0o700`（2026-09-02，功能验证通过）。
 
 ---
 

@@ -49,7 +49,7 @@ SUSPICIOUS_ROOT_DIRS = {
     "dist",
     "build",
 }
-PROTECTED_ROOT_DIRS = {".agents", ".claude", ".codex", ".git", ".workbuddy", ".web-clipper"}
+PROTECTED_ROOT_DIRS = {".agents", ".claude", ".codex", ".git", ".workbuddy"}
 KNOWN_GENERATED_ROOT_PATHS = {".codex/visualizations"}
 MIN_PROVIDER_HISTORY_THREADS = 20
 DOMINANT_PROVIDER_SHARE_THRESHOLD = 0.80

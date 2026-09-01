@@ -137,25 +137,6 @@ def skill_admin() -> str:
 
 
 
-def enterprise_clone() -> str:
-    bg, paper, green, gold, ink = "#163B2D", "#F5F0E2", "#7ED6A6", "#E9C46A", "#122018"
-    body = [
-        text(50, 52, "KNOWLEDGE SYSTEM", 15, green, 750, family=MONO, letter_spacing="2"),
-        text(50, 112, "Enterprise", 48, paper, 720), text(50, 162, "Clone Builder", 48, paper, 720),
-        text(50, 205, "Evidence becomes a traceable company core.", 21, "#B8D5C6", 450),
-        rect(50, 246, 354, 48, paper, 7), text(72, 277, "LOCAL MATERIALS + PUBLIC PROOF", 15, ink, 750, family=MONO),
-        text(50, 329, "collect  →  verify  →  structure  →  reuse", 15, green, 650, family=MONO),
-    ]
-    sources = [(500, 70, "DOCS"), (500, 144, "WEB"), (500, 218, "VOICE"), (500, 292, "CASES")]
-    for x, y, label in sources:
-        body += [rect(x, y - 24, 120, 48, paper, 5), text(x + 60, y + 6, label, 16, ink, 750, family=MONO, text_anchor="middle"), line(x + 120, y, 700, 181, green, 2)]
-    body += [circle(746, 181, 60, gold), text(746, 174, "CLAIM", 17, ink, 800, family=MONO, text_anchor="middle"), text(746, 198, "CORE", 17, ink, 800, family=MONO, text_anchor="middle")]
-    outputs = [(900, 75, "PROFILE"), (980, 135, "ASSETS"), (980, 227, "VOICE"), (900, 287, "LEDGER")]
-    for x, y, label in outputs:
-        body += [line(806, 181, x - 18, y, green, 2), circle(x, y, 8, green), text(x + 24, y + 6, label, 17, paper, 700, family=MONO)]
-    return svg("Enterprise Clone Builder", "Company documents, web evidence, voice, and cases flow into a traceable digital-twin repository.", bg, "evidence-to-knowledge-core", body)
-
-
 def html_express() -> str:
     bg, white, blue, orange, ink = "#164E63", "#FCFAF4", "#38BDF8", "#FB923C", "#132C35"
     body = [
@@ -319,7 +300,6 @@ HEROES = {
     ROOT / "docs/skills/codex-doctor/assets/readme/hero.svg": codex_doctor,
     ROOT / "docs/skills/codex-model-routing-team/assets/readme/hero.svg": routing_team,
     ROOT / "docs/skills/codex-skill-admin/assets/readme/hero.svg": skill_admin,
-    ROOT / "docs/skills/enterprise-clone-builder/assets/readme/hero.svg": enterprise_clone,
     ROOT / "docs/skills/gpt56-sol-pro-consult/assets/readme/hero.svg": sol_pro_consult,
     ROOT / "docs/skills/html-express/assets/readme/hero.svg": html_express,
     ROOT / "docs/skills/light-plan-and-work/assets/readme/hero.svg": light_plan,
