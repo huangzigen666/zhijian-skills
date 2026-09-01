@@ -562,6 +562,38 @@ def normalized_endpoint(proxy_url: str) -> str:
     return proxy_url.rstrip("/") + "/v1/chat/completions"
 
 
+_LOOPBACK_HOSTS = {
+    "127.0.0.1",
+    "localhost",
+    "::1",
+    "[::1]",
+    "0:0:0:0:0:0:0:1",
+    "[0:0:0:0:0:0:0:1]",
+}
+
+
+def validate_loopback_url(proxy_url: str) -> str:
+    """Reject non-loopback proxy URLs.
+
+    Writing a remote URL into WorkBuddy ``models.json`` would redirect model traffic
+    to an arbitrary host and disclose the local proxy client key. The default URL is
+    always loopback; this guard only matters when an operator overrides ``--proxy-url``.
+    """
+    from urllib.parse import urlparse
+
+    parsed = urlparse(proxy_url)
+    if parsed.scheme not in {"http", "https"}:
+        raise BridgeError("invalid_proxy_url", "Proxy URL must use http(s)", details={"url": proxy_url})
+    host = (parsed.hostname or "").lower()
+    if host not in _LOOPBACK_HOSTS:
+        raise BridgeError(
+            "proxy_not_loopback",
+            "Refusing non-loopback proxy URL (would expose local client key / redirect WorkBuddy traffic)",
+            details={"host": host},
+        )
+    return proxy_url
+
+
 def http_json(
     url: str,
     api_key: str,
@@ -972,6 +1004,8 @@ def cmd_audit(args: argparse.Namespace) -> int:
     proxy_url = args.proxy_url or (
         f"http://127.0.0.1:{facts.get('port', 8317)}" if facts.get("exists") else DEFAULT_PROXY_URL
     )
+    if args.proxy_url:
+        validate_loopback_url(proxy_url)
     client_key = client_secret(home)
     model_count: int | None = None
     owners: dict[str, int] = {}
@@ -1208,6 +1242,7 @@ def cmd_sync(args: argparse.Namespace) -> int:
         raise BridgeError("unknown_provider", "Unknown provider ids", details={"providers": unknown})
     providers = [providers_by_id[item] for item in requested]
     proxy_url = args.proxy_url.rstrip("/")
+    validate_loopback_url(proxy_url)
     endpoint = normalized_endpoint(proxy_url)
     client_key = client_secret(home)
     if not client_key:

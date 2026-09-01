@@ -87,7 +87,7 @@
       "capabilities": {
         "network": "required",
         "subprocess": "required",
-        "filesystem": "read",
+        "filesystem": "write",
         "credentials": "none"
       },
       "harnesses": ["codex"]
@@ -243,8 +243,8 @@
       },
       "capabilities": {
         "network": "required",
-        "subprocess": "required",
-        "filesystem": "read",
+        "subprocess": "none",
+        "filesystem": "write",
         "credentials": "none"
       },
       "harnesses": ["codex", "claude-code", "agents"]

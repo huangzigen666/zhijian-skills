@@ -195,6 +195,17 @@ class BridgeTests(unittest.TestCase):
         errors = BRIDGE.validate_provider(provider)
         self.assertTrue(any("non-credential model catalog" in error for error in errors))
 
+    def test_proxy_url_loopback_guard_accepts_loopback(self):
+        for url in ("http://127.0.0.1:8317", "http://localhost:8317", "http://[::1]:8317", "https://127.0.0.1/"):
+            with self.subTest(url=url):
+                self.assertEqual(BRIDGE.validate_loopback_url(url), url)
+
+    def test_proxy_url_loopback_guard_rejects_remote(self):
+        for url in ("http://192.168.1.5:8317", "https://example.com/v1", "http://10.0.0.1:8317", "ftp://127.0.0.1"):
+            with self.subTest(url=url):
+                with self.assertRaises(BRIDGE.BridgeError):
+                    BRIDGE.validate_loopback_url(url)
+
     def test_yaml_key_merge_preserves_existing_keys(self):
         source = 'host: "127.0.0.1"\napi-keys:\n  - "existing"\ndebug: false\n'
         merged, changed = BRIDGE.ensure_yaml_list_value(source, "api-keys", "new-key")

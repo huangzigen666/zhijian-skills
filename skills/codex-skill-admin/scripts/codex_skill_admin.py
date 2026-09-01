@@ -397,7 +397,14 @@ def backup_dir(prefix: str) -> pathlib.Path:
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     path = DEFAULT_BACKUP_ROOT / f"{prefix}-{stamp}"
     path.mkdir(parents=True, exist_ok=False)
+    os.chmod(path, 0o700)
     return path
+
+
+def write_private_json(path: pathlib.Path, data: Any) -> None:
+    """Write JSON backup diagnostics with owner-only (0600) permissions."""
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.chmod(path, 0o600)
 
 
 @with_client
@@ -441,9 +448,9 @@ def cmd_disable_unused(args: argparse.Namespace, client: WebSocketJsonRpc) -> in
 
     target_dir = pathlib.Path(args.backup_dir) if args.backup_dir else backup_dir("skill-disable-unused")
     target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "skills-list-before.json").write_text(json.dumps(skills, ensure_ascii=False, indent=2), encoding="utf-8")
-    (target_dir / "audit.json").write_text(json.dumps(audit, ensure_ascii=False, indent=2), encoding="utf-8")
-    (target_dir / "disable-candidates.json").write_text(json.dumps(candidates, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_private_json(target_dir / "skills-list-before.json", skills)
+    write_private_json(target_dir / "audit.json", audit)
+    write_private_json(target_dir / "disable-candidates.json", candidates)
 
     results = []
     for item in candidates:
@@ -460,7 +467,7 @@ def cmd_disable_unused(args: argparse.Namespace, client: WebSocketJsonRpc) -> in
         "nextVerificationCommand": "python3 scripts/codex_skill_admin.py verify --cwd \"$PWD\"",
         "results": results,
     }
-    (target_dir / "disable-result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_private_json(target_dir / "disable-result.json", result)
     json_print(result)
     return 1 if result["failed"] else 0
 
@@ -477,7 +484,7 @@ def cmd_restore(args: argparse.Namespace, client: WebSocketJsonRpc) -> int:
         response = client.request("skills/config/write", {"path": item["path"], "enabled": True})
         results.append({"name": item.get("name"), "path": item["path"], "ok": "error" not in response, "response": response})
     result = {"restored": len(results), "failed": [item for item in results if not item["ok"]], "results": results}
-    (backup / "restore-result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_private_json(backup / "restore-result.json", result)
     json_print(result)
     return 1 if result["failed"] else 0
 

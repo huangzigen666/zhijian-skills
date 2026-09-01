@@ -22,7 +22,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import yaml from 'js-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -169,8 +169,9 @@ function main() {
     console.log(`- ${themeName}`);
     const outputPath = path.join(previewDir, `${themeName}.html`);
     try {
-      execSync(
-        `node "${convertScript}" "${articlePath}" --theme ${themeName} --output "${outputPath}"`,
+      execFileSync(
+        'node',
+        [convertScript, articlePath, '--theme', themeName, '--output', outputPath],
         { stdio: 'pipe' }
       );
       iframeSrcs.push({ themeName, outputPath, relPath: `_preview_frames/${themeName}.html` });
