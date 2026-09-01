@@ -2,15 +2,25 @@
 
 本 skill 的联网调研步骤依赖 web-clipper skill 进行网页抓取。如果你已安装 web-clipper，按以下方式调用。
 
+## ⚠️ 安全约束（务必先读 SKILL.md 的「安全约束」小节）
+
+`bash "$WEB_CLIPPER_ROOT/...sh" --url "<url>"` 会把 `WEB_CLIPPER_ROOT` 与 `--url` 直接代入一个 **双引号 shell 字符串**。若其中任一值含 `"` 或 shell 元字符（来自抓取的网页、会话历史或不可信输入），会发生**命令注入（RCE）**。调用前必须：
+
+1. **校验 `WEB_CLIPPER_ROOT`**：仅允许绝对路径且字符集为 `[A-Za-z0-9._/-]`，拒绝任何引号/`$`/`` ` ``/`;`/空格等。
+2. **校验 `--url`**：仅允许 `https://` 开头且不含 `" ' $ ` ` ; | & ( ) < > 换行 空格` 的 URL；从抓取结果提取的子链接、对话中给的"官网 URL"都须先过此校验，不通过即中止。
+3. **用位置参数调用，不拼字符串**：用包装函数 `exec "$WEB_CLIPPER_ROOT/scripts/run_web_clipper.sh" "$@"` 把 `--url` 作为单一位置参数传入，避免把整条命令拼成 `bash -c "…"`。
+
+下面的示例均默认 `<你的web-clipper路径>` 与 `<url>` 已通过上述校验。
+
 ## 入口脚本
 
 ```bash
-# 替换为你的 web-clipper 安装路径
+# 替换为你的 web-clipper 安装路径（须为受信绝对路径，仅含 [A-Za-z0-9._/-]）
 WEB_CLIPPER_ROOT="<你的web-clipper路径>"
 bash "$WEB_CLIPPER_ROOT/scripts/run_web_clipper.sh"
 ```
 
-在你的工作目录下执行。
+在你的**专用工作目录**下执行，不要在当前工作目录（CWD）直接产出。
 
 ## 单篇抓取
 
@@ -53,7 +63,7 @@ bash "<WEB_CLIPPER_ROOT>/scripts/run_web_clipper.sh" \
   --tag "企业名"
 ```
 
-脚本会自动从索引页提取子链接并逐个抓取。
+脚本会自动从索引页提取子链接并逐个抓取（子链接由脚本内部处理，**不要**把它们再拼回新的 `--url "…"` shell 命令）。
 
 ## builder 中的抓取策略
 

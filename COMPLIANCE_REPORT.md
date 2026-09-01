@@ -107,14 +107,29 @@
 
 ---
 
-## 六、整体合规结论
+## 六、第三轮定向复核（2026-09-02，3 个无自动化测试 skill）
+
+对上一轮中**无离线单测覆盖**的 3 个 skill 做红队复审计：`codex-skill-admin`、`enterprise-clone-builder`、`html-express`。
+
+| # | Skill | 发现 | 严重度 | 处置 |
+|---|---|---|---|---|
+| 1 | `enterprise-clone-builder` | `bash "$WEB_CLIPPER_ROOT/...sh" --url "<url>"` 把 `WEB_CLIPPER_ROOT`/`--url` 代入双引号 shell 字符串，含 `"`/shell 元字符即 RCE（值可来自抓取内容或不可信输入） | **高** | ✅ 文档层加固：`SKILL.md` 与 `references/web-clipper-usage.md` 新增「安全约束」——受信绝对路径 `[A-Za-z0-9._/-]`、`--url` 须严格 `https://` 且不含引号/元字符、以位置参数（argv 数组）调用、企业名目录净化、专用工作目录运行 |
+| 2 | `codex-skill-admin` | 上一轮 perms 修复不完整：`--backup-dir` 覆盖路径 `mkdir` 后未 `chmod`（默认 `0o755`）；`backup/` 父目录亦为默认权限 | 中 | ✅ 代码补全：`target_dir.mkdir` 后 `os.chmod(target_dir, 0o700)`，并 `backup_dir()` 内对 `DEFAULT_BACKUP_ROOT` `chmod 0o700`（功能验证通过） |
+| 3 | `html-express` | 全 `assets/` 扫描：唯一匹配为本地相对 `@import url("tokens.css")`，无 `<script>`/`<iframe>`/`fetch`/外链 | — | 确认干净，原结论成立 |
+
+**说明**：`enterprise-clone-builder` 的加固属**文档层**——真正的抓取逻辑在仓库外的 `web-clipper`，本仓库无法修改其本体；文档约束降低了但**未彻底消除**注入风险，使用者仍应另行审计 `web-clipper`。其余两项已在本轮实质修复。
+
+---
+
+## 七、整体合规结论
 
 **判定：通过安全合规基线，可投入使用。**
 
 - 原始核查：**无高危漏洞**，且具备多项强安全控制（无命令注入、无明文密钥、凭证权限收紧、外联最小化、显式滥用禁止）。
 - 第二轮（2026-09-02）逐 skill 复核：发现 **1 项命令注入高危**，已于同轮修复（`wechat-styler` `execSync`→`execFileSync`，31/31 测试通过），当前 **零已知高危**；未披露出站与能力声明偏差均已闭环。
-- 整改闭环：首轮 4 项整改全部完成；第二轮高危已修、披露缺口已补、registry 已修正。
-- 透明度：所有残留项均**显式披露**，未做掩盖；上游无签名属上游现状；`enterprise-clone-builder` 外部依赖盲区已如实标注。
-- 过程合规：推送经用户逐次显式授权，R1 guard 白名单为用户可控的安全控制修改，未绕过任何守卫；本轮代码修复与文档更新均为本地可回退变更。
+- 第三轮（2026-09-02）定向复核 3 个无测试 skill：再发现 **1 项命令注入高危**（`enterprise-clone-builder` 委托 `web-clipper` 的 shell 调用）→ 文档层加固；`codex-skill-admin` perms 修复补全；`html-express` 确认干净。当前仓库 **零已知高危**。
+- 整改闭环：首轮 4 项整改全部完成；第二、三轮高危均修复，披露缺口已补，registry 已修正。
+- 透明度：所有残留项均**显式披露**，未做掩盖；上游无签名属上游现状；`enterprise-clone-builder` 外部依赖盲区已如实标注并补充文档层加固。
+- 过程合规：推送经用户逐次显式授权，R1 guard 白名单为用户可控的安全控制修改，未绕过任何守卫；各轮代码修复与文档更新均为本地可回退变更。
 
-**建议后续（非阻塞）**：① 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。
+**建议后续（非阻塞）**：① 定期重跑 `verify-upstream`、`gen-node-sbom.mjs` 与 `gen-python-sbom.py` 以跟踪依赖漂移，并在升级 `playwright` / `weasyprint` 时同步更新 `requirements.txt` 与 SBOM。② 对 `enterprise-clone-builder` 依赖的仓库外 `web-clipper` 做独立安全审计（命令注入类风险在仓库外）。

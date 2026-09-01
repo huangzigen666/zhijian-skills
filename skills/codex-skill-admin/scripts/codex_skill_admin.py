@@ -398,6 +398,10 @@ def backup_dir(prefix: str) -> pathlib.Path:
     path = DEFAULT_BACKUP_ROOT / f"{prefix}-{stamp}"
     path.mkdir(parents=True, exist_ok=False)
     os.chmod(path, 0o700)
+    try:
+        os.chmod(DEFAULT_BACKUP_ROOT, 0o700)
+    except OSError:
+        pass
     return path
 
 
@@ -448,6 +452,7 @@ def cmd_disable_unused(args: argparse.Namespace, client: WebSocketJsonRpc) -> in
 
     target_dir = pathlib.Path(args.backup_dir) if args.backup_dir else backup_dir("skill-disable-unused")
     target_dir.mkdir(parents=True, exist_ok=True)
+    os.chmod(target_dir, 0o700)
     write_private_json(target_dir / "skills-list-before.json", skills)
     write_private_json(target_dir / "audit.json", audit)
     write_private_json(target_dir / "disable-candidates.json", candidates)
